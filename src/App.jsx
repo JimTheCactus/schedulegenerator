@@ -15,7 +15,6 @@ import Typography from "@mui/material/Typography";
 import "./App.css";
 
 import { useState } from "react";
-import { Schedule } from "@mui/icons-material";
 
 const ScheduleBox = ({ children }) => (
   <Paper variant="elevation" sx={{ padding: 1, mx: 1 }}>
@@ -40,6 +39,18 @@ const ScheduleInputBox = ({ setter, schedule, day }) => {
   );
 };
 
+const fileToBase64 = async (file) => {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+    reader.onerror = reject;
+    reader.onabort = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
 const App = () => {
   const daysOfTheWeek = [
     "Sunday",
@@ -54,13 +65,15 @@ const App = () => {
     daysOfTheWeek.reduce((acc, item) => ({ ...acc, [item]: "" }), {}),
   );
 
+  const [image, setImage] = useState(undefined);
+
   const days = [...daysOfTheWeek, "The best day ever"];
 
   const boxWidth = 8;
   const dayBoxes = days.map((day, index) => {
     return (
       <>
-        <Grid size={Math.min(boxWidth, 12-index)} offset={index}>
+        <Grid size={Math.min(boxWidth, 12 - index)} offset={index}>
           <ScheduleBox key={day}>
             {day} {schedule[day]}
           </ScheduleBox>
@@ -83,11 +96,29 @@ const App = () => {
 
   return (
     <>
-      <Container maxWidth="md" sx={{my: 1}}>
-        <Grid container spacing={2}>
+      <Container maxWidth="md" sx={{ my: 1 }}>
+        <Grid
+          container
+          spacing={2}
+          sx={{
+            py: 1,
+            backgroundSize: "cover",
+            backgroundImage: `url('${image}')`,
+          }}
+        >
           {dayBoxes}
         </Grid>
-        <Stack direction="column">{dayInputs}</Stack>
+        <Stack direction="column">
+          <TextField
+            sx={{ my: 2 }}
+            label="Background image"
+            type="file"
+            onChange={async (event) => {
+              setImage(await fileToBase64(event.target.files[0]));
+            }}
+          />
+          {dayInputs}
+        </Stack>
       </Container>
     </>
   );
